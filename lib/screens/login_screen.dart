@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:payroll_system/screens/admin/admin_home.dart";
 import "package:payroll_system/theme/theme.dart";
 import "package:payroll_system/widgets/custom_scaffold.dart";
 
@@ -15,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
+      apptitle: const Text("Payzo",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,)),
       child: Column(
         children: [
           const Expanded(
@@ -152,23 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formSignInKey.currentState!.validate() &&
-                                rememberPassword) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Processing Data'),
-                                ),
-                              );
-                            } else if (!rememberPassword) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Please agree to the processing of personal data'),
-                                ),
-                              );
-                            }
-                          },
+                        
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 Colors.blue, // Set button color to blue
@@ -182,35 +168,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                   BorderRadius.circular(10), // Rounded corners
                             ),
                           ),
+                          onPressed: () { 
+                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (e)=> const AdminHome()),(route)=>false);
+                           },
                           child: const Text(
                             'Login',
                             style: TextStyle(
                                 fontSize: 16.0, fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 25.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              thickness: 0.7,
-                              color: Colors.grey.withOpacity(0.5),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 25.0,
-                      ),
-                      const SizedBox(
-                        height: 25.0,
-                      ),
-                      const SizedBox(
-                        height: 20.0,
                       ),
                     ],
                   ),

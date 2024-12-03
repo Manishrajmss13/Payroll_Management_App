@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:payroll_system/screens/admin/admin_home.dart';
+import 'package:payroll_system/screens/admin/profile.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
 void main()
 {
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget
     (
       debugShowCheckedModeBanner: false,
       title:"Flutter demo",
-      home: WelcomeScreen(),
+      home: AdminHome(),
     );
   }
 }
