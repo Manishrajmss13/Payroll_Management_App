@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
 
-class AddEmployeePage extends StatefulWidget {
-  const AddEmployeePage({super.key});
+class ViewPayslipPage extends StatefulWidget {
+  const ViewPayslipPage({super.key});
 
   @override
-  State<AddEmployeePage> createState() => _AddEmployeePageState();
+  State<ViewPayslipPage> createState() => _ViewPayslipPageState();
 }
 
-class _AddEmployeePageState extends State<AddEmployeePage> {
+class _ViewPayslipPageState extends State<ViewPayslipPage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("Add Employee",
+      apptitle: const Text("View Payslip",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

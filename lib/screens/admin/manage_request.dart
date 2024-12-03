@@ -12,7 +12,7 @@ class _ManageRequestPageState extends State<ManageRequestPage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("My Profile",
+      apptitle: const Text("Manage Requests",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

@@ -1,7 +1,8 @@
-import "package:flutter/material.dart";
-import "package:payroll_system/screens/admin/admin_home.dart";
-import "package:payroll_system/theme/theme.dart";
-import "package:payroll_system/widgets/custom_scaffold.dart";
+import 'package:flutter/material.dart';
+import 'package:payroll_system/screens/admin/admin_home.dart';
+import 'package:payroll_system/screens/employee/employee_home.dart'; // Import EmployeeHome
+import 'package:payroll_system/theme/theme.dart';
+import 'package:payroll_system/widgets/custom_scaffold.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,11 +13,21 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formSignInKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   bool rememberPassword = true;
+  bool _passwordVisible = false; // State to track password visibility
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("Payzo",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,)),
+      apptitle: const Text(
+        "Payzo",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       child: Column(
         children: [
           const Expanded(
@@ -54,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 40.0,
                       ),
                       TextFormField(
+                        controller: emailController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter Email';
@@ -68,13 +80,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -84,7 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 25.0,
                       ),
                       TextFormField(
-                        obscureText: true,
+                        controller: passwordController,
+                        obscureText: !_passwordVisible, // Toggle visibility
                         obscuringCharacter: '*',
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -100,53 +113,32 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _passwordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _passwordVisible = !_passwordVisible;
+                              });
+                            },
                           ),
                         ),
                       ),
                       const SizedBox(
                         height: 25.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: rememberPassword,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    rememberPassword = value!;
-                                  });
-                                },
-                                activeColor: lightColorScheme.primary,
-                              ),
-                              const Text(
-                                'Remember me',
-                                style: TextStyle(
-                                  color: Colors.black45,
-                                ),
-                              ),
-                            ],
-                          ),
-                          GestureDetector(
-                            child: Text(
-                              'Forget password?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: lightColorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                       const SizedBox(
                         height: 25.0,
@@ -154,23 +146,47 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                        
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Colors.blue, // Set button color to blue
-                            foregroundColor:
-                                Colors.white, // Set text color to white
-                            padding: const EdgeInsets.symmetric(
-                                vertical:
-                                    15.0), // Add padding for a larger button
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15.0),
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(10), // Rounded corners
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () { 
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (e)=> const AdminHome()),(route)=>false);
-                           },
+                          onPressed: () {
+                            if (_formSignInKey.currentState!.validate()) {
+                              final email = emailController.text.trim();
+                              final password = passwordController.text.trim();
+
+                              if (email == 'admin' && password == 'admin') {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AdminHome(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } else if (email == 'employee' &&
+                                  password == 'employee') {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const EmployeeHome(),
+                                  ),
+                                  (route) => false,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Invalid credentials. Please try again.'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
                           child: const Text(
                             'Login',
                             style: TextStyle(

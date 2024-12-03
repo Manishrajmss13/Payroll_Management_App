@@ -12,7 +12,7 @@ class _ApprovePayslipPageState extends State<ApprovePayslipPage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("My Profile",
+      apptitle: const Text("Approve Payslip",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

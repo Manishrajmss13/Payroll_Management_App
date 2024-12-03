@@ -12,7 +12,7 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("My Profile",
+      apptitle: const Text("View Attendance",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

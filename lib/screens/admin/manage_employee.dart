@@ -12,7 +12,7 @@ class _ManageEmployeePageState extends State<ManageEmployeePage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      apptitle: const Text("My Profile",
+      apptitle: const Text("Manage Employee",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

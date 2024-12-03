@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payroll_system/screens/admin/admin_home.dart';
-import 'package:payroll_system/screens/admin/profile.dart';
+import 'package:payroll_system/screens/employee/employee_home.dart';
+import 'package:payroll_system/screens/employee/profile.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
 void main()
 {
@@ -17,8 +18,8 @@ class MyApp extends StatelessWidget
     return const MaterialApp
     (
       debugShowCheckedModeBanner: false,
-      title:"Flutter demo",
-      home: AdminHome(),
+      title:"Payzo App",
+      home: WelcomeScreen(),
     );
   }
 }
