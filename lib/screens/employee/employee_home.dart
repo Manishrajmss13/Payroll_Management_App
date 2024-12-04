@@ -103,7 +103,7 @@ class EmployeeHome extends StatelessWidget {
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ProfilePage(),
+                              builder: (context) => const ProfilePage(employeeName: 'John Doe',),
                             ),
                           ),
                         ),
