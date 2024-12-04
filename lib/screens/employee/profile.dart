@@ -42,13 +42,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildProfileRow('ID', '917722H005'),
+                    _buildProfileRow('ID', '007'),
                     _buildProfileRow('Name', widget.employeeName),
-                    _buildProfileRow('Age', '28'),
+                    _buildProfileRow('Age', '20'),
                     _buildProfileRow('Gender', 'Male'),
                     _divider(),
                     const SizedBox(height: 20),
-                    _buildProfileRow('Role', 'Software Engineer'),
+                    _buildProfileRow('Role', 'Employee'),
                     _buildProfileRow('Designation', 'Developer'),
                     _divider(),
                     const SizedBox(height: 20),
