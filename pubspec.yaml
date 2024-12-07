@@ -37,6 +37,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   icons_plus: ^4.0.0
   intl: ^0.20.1
+  flutter_chart: ^0.1.6
+  pie_chart: ^5.4.0
+  fl_chart: ^0.69.2
 
 
 dev_dependencies:

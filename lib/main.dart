@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payroll_system/screens/admin/admin_home.dart';
 import 'package:payroll_system/screens/admin/manage_employee.dart';
 import 'package:payroll_system/screens/employee/employee_home.dart';
+import 'package:payroll_system/screens/employee/my_attendance.dart';
 import 'package:payroll_system/screens/employee/profile.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
 void main()
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget
     (
       debugShowCheckedModeBanner: false,
       title:"Payzo App",
-      home: AdminHome(),
+      home: MyAttendancePage(),
     );
   }
 }
