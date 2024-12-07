@@ -16,6 +16,15 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   final int daysLeaveTaken = 45;
   final int yearlyLeaveAllowance = 50;
 
+  // Mock data for absent log
+  final List<String> absentLog = [
+    "Jan 5, 2024",
+    "Feb 10, 2024",
+    "Mar 15, 2024",
+    "Apr 25, 2024",
+    "May 30, 2024",
+  ];
+
   // Store selected chart section
   int? _touchedIndex;
 
@@ -29,24 +38,25 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      child: Column(
-        children: [
-          // "December 2024" Heading
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            margin: const EdgeInsets.only(bottom: 5),
-            child: const Text(
-              "December 2024",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Month Heading
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              margin: const EdgeInsets.only(bottom: 5),
+              child: const Text(
+                "December 2024",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
+            // Content Section
+            Container(
               padding: const EdgeInsets.all(20.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -66,40 +76,39 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Donut Chart with Legend
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: PieChart(
-                            PieChartData(
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 60,
-                              sections: _buildChartSections(),
-                              pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, PieTouchResponse? response) {
-                                  setState(() {
-                                    if (!event.isInterestedForInteractions || response == null) {
-                                      _touchedIndex = null;
-                                      return;
-                                    }
-                                    _touchedIndex = response.touchedSection?.touchedSectionIndex;
-                                  });
-                                },
-                              ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: 300,
+                        child: PieChart(
+                          PieChartData(
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 60,
+                            sections: _buildChartSections(),
+                            pieTouchData: PieTouchData(
+                              touchCallback: (FlTouchEvent event, PieTouchResponse? response) {
+                                setState(() {
+                                  if (!event.isInterestedForInteractions || response == null) {
+                                    _touchedIndex = null;
+                                    return;
+                                  }
+                                  _touchedIndex = response.touchedSection?.touchedSectionIndex;
+                                });
+                              },
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildLegend(Colors.teal, "Days Worked"),
-                            const SizedBox(width: 10),
-                            _buildLegend(Colors.orangeAccent, "Days Leave"),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildLegend(Colors.green, "Days Worked"),
+                          const SizedBox(width: 10),
+                          _buildLegend(Colors.redAccent, "Days Leave"),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
 
@@ -122,9 +131,54 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // Absent Log Button
+                  ElevatedButton(
+                    onPressed: _showAbsentLog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: const Text(
+                      "View Absent Log",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Show Absent Log Popup
+  void _showAbsentLog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Absent Log"),
+        content: SizedBox(
+          height: 200,
+          child: ListView.builder(
+            itemCount: absentLog.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: Icon(Icons.circle, color: Colors.redAccent),
+                title: Text(absentLog[index]),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Close"),
           ),
         ],
       ),
@@ -135,7 +189,7 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
   List<PieChartSectionData> _buildChartSections() {
     return [
       PieChartSectionData(
-        color: Colors.teal,
+        color: Colors.green,
         value: daysWorked.toDouble(),
         title: _touchedIndex == 0
             ? "$daysWorked Days"
@@ -148,7 +202,7 @@ class _MyAttendancePageState extends State<MyAttendancePage> {
         ),
       ),
       PieChartSectionData(
-        color: Colors.orangeAccent,
+        color: Colors.redAccent,
         value: daysLeaveTaken.toDouble(),
         title: _touchedIndex == 1
             ? "$daysLeaveTaken Days"
