@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:payroll_system/screens/employee/my_attendance.dart';
+import 'package:payroll_system/screens/employee/notification.dart';
 import 'package:payroll_system/screens/employee/request_leave.dart';
 import 'package:payroll_system/screens/employee/view_payslip.dart';
 import 'package:payroll_system/screens/employee/profile.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
-
 class EmployeeHome extends StatelessWidget {
   const EmployeeHome({super.key});
 
@@ -19,15 +19,28 @@ class EmployeeHome extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      actionWidget: IconButton(
-        icon: const Icon(Icons.logout, color: Colors.white),
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (e) => const WelcomeScreen()),
-            (route) => false,
-          );
-        },
+      actionWidget: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EmployeeNotificationPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (e) => const WelcomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       child: Column(
         children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:payroll_system/screens/admin/admin_notification.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
-import 'package:payroll_system/screens/admin/add_employee.dart'; // Add your respective screen imports
+import 'package:payroll_system/screens/admin/add_employee.dart'; 
 import 'package:payroll_system/screens/admin/manage_employee.dart';
 import 'package:payroll_system/screens/admin/approve_payslip.dart';
 import 'package:payroll_system/screens/admin/manage_request.dart';
@@ -20,15 +21,30 @@ class AdminHome extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      actionWidget: IconButton(
-        icon: const Icon(Icons.logout, color: Colors.white),
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (e) => const WelcomeScreen()),
-            (route) => false,
-          );
-        },
+      actionWidget: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ManageNotificationPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (e) => const WelcomeScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       child: Column(
         children: [
