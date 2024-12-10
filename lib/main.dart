@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget
     (
       debugShowCheckedModeBanner: false,
       title:"Payzo App",
-      home: EmployeeHome(),
+      home: AdminHome(),
     );
   }
 }
