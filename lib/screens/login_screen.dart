@@ -3,6 +3,8 @@ import 'package:payroll_system/screens/admin/admin_home.dart';
 import 'package:payroll_system/screens/employee/employee_home.dart'; // Import EmployeeHome
 import 'package:payroll_system/theme/theme.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -140,9 +142,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 25.0,
                       ),
-                      const SizedBox(
-                        height: 25.0,
-                      ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -154,33 +153,64 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formSignInKey.currentState!.validate()) {
                               final email = emailController.text.trim();
                               final password = passwordController.text.trim();
 
-                              if (email == 'admin' && password == 'admin') {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const AdminHome(),
-                                  ),
-                                  (route) => false,
-                                );
-                              } else if (email == 'employee' &&
-                                  password == 'employee') {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const EmployeeHome(),
-                                  ),
-                                  (route) => false,
-                                );
-                              } else {
+                              try {
+                                // Sign in with Firebase Authentication
+                                UserCredential userCredential = await FirebaseAuth.instance
+                                    .signInWithEmailAndPassword(
+                                    email: email, password: password);
+
+                                // Fetch the user document to check role (admin or employee)
+                                final userDoc = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(userCredential.user?.uid)
+                                    .get();
+
+                                if (userDoc.exists) {
+                                  final role = userDoc['role'];
+
+                                  if (role == 'admin') {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const AdminHome(),
+                                      ),
+                                          (route) => false,
+                                    );
+                                  } else  {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const EmployeeHome(),
+                                      ),
+                                          (route) => false,
+                                    );
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('User not found.'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              } on FirebaseAuthException catch (e) {
+                                String message = '';
+                                if (e.code == 'user-not-found') {
+                                  message = 'No user found for that email.';
+                                } else if (e.code == 'wrong-password') {
+                                  message = 'Wrong password provided.';
+                                } else {
+                                  message = 'An error occurred. Please try again.';
+                                }
+
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Invalid credentials. Please try again.'),
+                                  SnackBar(
+                                    content: Text(message),
                                     backgroundColor: Colors.red,
                                   ),
                                 );

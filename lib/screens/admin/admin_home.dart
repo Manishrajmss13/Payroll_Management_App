@@ -26,7 +26,7 @@ class AdminHome extends StatelessWidget {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (e) => const WelcomeScreen()),
-            (route) => false,
+                (route) => false,
           );
         },
       ),
@@ -65,7 +65,7 @@ class AdminHome extends StatelessWidget {
                     child: GridView(
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
@@ -148,7 +148,7 @@ class AdminHome extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           minimumSize:
-              isWide ? const Size(double.infinity, 60) : const Size(150, 60),
+          isWide ? const Size(double.infinity, 60) : const Size(150, 60),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

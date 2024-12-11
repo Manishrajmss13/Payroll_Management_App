@@ -1,71 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AddEmployeePage extends StatefulWidget {
-  const AddEmployeePage({super.key});
+class EditEmployee extends StatefulWidget {
+  final String employeeId;
+  final String employeeName;
+  final String employeeRole;
+
+  const EditEmployee({
+    super.key,
+    required this.employeeId,
+    required this.employeeName,
+    required this.employeeRole,
+  });
+
   @override
-  State<AddEmployeePage> createState() => _AddEmployeePageState();
+  State<EditEmployee> createState() => _EditEmployeePageState();
 }
 
-
-class _AddEmployeePageState extends State<AddEmployeePage> {
-  // Form controllers
+class _EditEmployeePageState extends State<EditEmployee> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _basicPayController = TextEditingController();
 
-  // State variables
-  int _age = 25;
-  String? _gender = "Male"; // Default gender
-  String? _role = "Software Developer"; // Default role
+  int _age = 30;
+  String? _gender = "Male";
+  String? _role = "Software Developer";
 
-  // Firebase integration logic
-  Future<void> addEmployee() async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmployeeData();
+  }
+
+  Future<void> _fetchEmployeeData() async {
     try {
-      // Create employee authentication account
-      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _mobileController.text.trim(), // Mobile number as password
-      );
+      DocumentSnapshot employeeSnapshot =
+      await _firestore.collection('users').doc(widget.employeeId).get();
 
-      String userId = userCredential.user?.uid ?? "";
+      if (employeeSnapshot.exists) {
+        var data = employeeSnapshot.data() as Map<String, dynamic>;
 
-      // Save employee details to the 'users' collection in Firestore
-      await firestore.collection('users').doc(userId).set({
-        'name': _nameController.text,
-        'age': _age,
-        'gender': _gender,
-        'role': _role,
-        'email': _emailController.text,
-        'mobile': _mobileController.text,
-        'basicPay': double.parse(_basicPayController.text),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      // Show Snackbar with userId
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Employee added successfully! User ID: $userId')),
-      );
+        setState(() {
+          _nameController.text = data['name'] ?? '';
+          _emailController.text = data['email'] ?? '';
+          _mobileController.text = data['mobile'] ?? '';
+          _basicPayController.text = data['basicPay']?.toString() ?? '';
+          _age = data['age'] ?? 30;
+          _gender = data['gender'] ?? "Male";
+          _role = data['role'] ?? "Software Developer";
+        });
+      } else {
+        throw Exception('Employee not found');
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      print("Error fetching employee data: $e");
     }
   }
 
-
+  Future<void> _updateEmployeeData() async {
+    try {
+      await _firestore.collection('users').doc(widget.employeeId).update({
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'mobile': _mobileController.text,
+        'basicPay': double.tryParse(_basicPayController.text) ?? 0.0,
+        'age': _age,
+        'gender': _gender,
+        'role': _role,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Changes Applied Successfully!"),
+        ),
+      );
+    } catch (e) {
+      print("Error updating employee data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to apply changes. Please try again."),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
       apptitle: const Text(
-        "Add Employee",
+        "Edit Employee",
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -89,7 +115,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               children: [
                 _buildTextField(
                   controller: _nameController,
-                  hintText: "Enter Full Name",
+                  hintText: "Full Name",
                 ),
                 const SizedBox(height: 15),
                 _buildAgeSelector(),
@@ -117,45 +143,35 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 const SizedBox(height: 15),
                 _buildTextField(
                   controller: _emailController,
-                  hintText: "Enter Email Address",
+                  hintText: "Email Address",
                   keyboardType: TextInputType.emailAddress,
+                  editable: false,
                 ),
                 const SizedBox(height: 15),
                 _buildTextField(
                   controller: _mobileController,
-                  hintText: "Enter Mobile Number",
+                  hintText: "Mobile Number",
                   keyboardType: TextInputType.phone,
+                  editable: false,
                 ),
                 const SizedBox(height: 15),
                 _buildTextField(
                   controller: _basicPayController,
-                  hintText: "Enter Basic Pay",
+                  hintText: "Basic Pay",
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 30),
                 Center(
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15.0),
-                      gradient: const LinearGradient(colors: [
-                        Color.fromARGB(255, 23, 107, 204), // Dark blue
-                        Color.fromARGB(255, 145, 193, 233),
-                      ] // Light blue],
-                      ),
-                    ),
                     child: ElevatedButton(
                       onPressed: () {
-                        // Check if all required fields are filled
                         if (_nameController.text.isNotEmpty &&
                             _emailController.text.contains('@') &&
                             _mobileController.text.isNotEmpty &&
                             _basicPayController.text.isNotEmpty) {
-                          // Call the addEmployee function to add data to Firestore
-                          addEmployee();
+                          _updateEmployeeData();
                         } else {
-                          // Show error message if fields are incomplete
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Please fill in all required fields."),
@@ -164,11 +180,13 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        backgroundColor: const Color.fromARGB(255, 23, 107, 204),
                       ),
                       child: const Text(
-                        "Add Employee",
+                        "Apply Changes",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -186,11 +204,11 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Method to build each input field
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     TextInputType keyboardType = TextInputType.text,
+    bool editable = true,
   }) {
     return TextField(
       controller: controller,
@@ -208,10 +226,10 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         ),
       ),
       keyboardType: keyboardType,
+      enabled: editable,
     );
   }
 
-  // Age selector using stepper
   Widget _buildAgeSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -254,7 +272,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Gender selector using radio buttons
   Widget _buildGenderSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,71 +286,58 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         ),
         Row(
           children: [
-            Expanded(
-              child: RadioListTile<String>(
-                title: const Text("Male", style: TextStyle(fontSize: 14)),
-                value: "Male",
-                groupValue: _gender,
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: RadioListTile<String>(
-                title: const Text("Female", style: TextStyle(fontSize: 14)),
-                value: "Female",
-                groupValue: _gender,
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value;
-                  });
-                },
-              ),
-            ),
+            _buildGenderRadioButton("Male"),
+            _buildGenderRadioButton("Female"),
+            _buildGenderRadioButton("Other"),
           ],
         ),
       ],
     );
   }
 
-  // Dropdown widget
+  Widget _buildGenderRadioButton(String gender) {
+    return Row(
+      children: [
+        Radio<String>(
+          value: gender,
+          groupValue: _gender,
+          onChanged: (String? value) {
+            setState(() {
+              _gender = value;
+            });
+          },
+        ),
+        Text(gender),
+      ],
+    );
+  }
+
   Widget _buildDropdown({
     required String label,
     required List<String> items,
-    required String? value,
-    required ValueChanged<String?> onChanged,
+    String? value,
+    required void Function(String?) onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
+        const Text(
+          "Role:",
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
         ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
+        const SizedBox(width: 10),
+        DropdownButton<String>(
           value: value,
-          items: items
-              .map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(item, style: const TextStyle(fontSize: 14))))
-              .toList(),
           onChanged: onChanged,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey[300],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15.0),
-              borderSide: BorderSide.none,
-            ),
-          ),
+          items: items.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
       ],
     );
