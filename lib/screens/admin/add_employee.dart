@@ -9,46 +9,48 @@ class AddEmployeePage extends StatefulWidget {
   State<AddEmployeePage> createState() => _AddEmployeePageState();
 }
 
-
 class _AddEmployeePageState extends State<AddEmployeePage> {
-  // Form controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _basicPayController = TextEditingController();
 
-  // State variables
   int _age = 25;
-  String? _gender = "Male"; // Default gender
-  String? _role = "Software Developer"; // Default role
+  String? _gender = "Male";
+  String? _role = "Software Developer";
 
-  // Firebase integration logic
   Future<void> addEmployee() async {
     final FirebaseAuth auth = FirebaseAuth.instance;
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      // Create employee authentication account
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
-        password: _mobileController.text.trim(), // Mobile number as password
+        password: _mobileController.text.trim(),
       );
 
       String userId = userCredential.user?.uid ?? "";
 
-      // Save employee details to the 'users' collection in Firestore
+      double basicPay = double.parse(_basicPayController.text.trim());
+      Map<String, dynamic> payslipDetails = _calculatePayslip(basicPay);
+
       await firestore.collection('users').doc(userId).set({
-        'name': _nameController.text,
+        'name': _nameController.text.trim(),
         'age': _age,
         'gender': _gender,
         'role': _role,
-        'email': _emailController.text,
-        'mobile': _mobileController.text,
-        'basicPay': double.parse(_basicPayController.text),
+        'email': _emailController.text.trim(),
+        'mobile': _mobileController.text.trim(),
+        'basicPay': basicPay,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Show Snackbar with userId
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('payslips')
+          .add(payslipDetails);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Employee added successfully! User ID: $userId')),
       );
@@ -58,6 +60,53 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       );
     }
   }
+
+  Map<String, dynamic> _calculatePayslip(double grossSalary) {
+    // Define percentages of the gross salary
+    double temp = grossSalary / 12;
+    double basicPayPercentage = 0.5; // Basic Pay = 50% of Gross Salary
+    double hraPercentage = 0.2; // HRA = 20% of Gross Salary
+    double specialAllowancePercentage = 0.1; // Special Allowance = 10% of Gross Salary
+    double overtimePayPercentage = 0.05; // Overtime = 5% of Gross Salary
+    double bonusPercentage = 0.05; // Bonus = 5% of Gross Salary
+    double providentFundPercentage = 0.05; // Provident Fund = 5% of Gross Salary
+    double healthInsurancePercentage = 0.02; // Health Insurance = 2% of Gross Salary
+    double taxPercentage = 0.03; // Tax = 3% of Gross Salary
+    double attendanceDeductionPercentage = 0.01; // Attendance Deduction = 1% of Gross Salary
+
+    // Calculate individual components
+    int basicPay = (temp * basicPayPercentage).truncate();
+    int hra = (temp * hraPercentage).truncate();
+    int specialAllowance = (temp * specialAllowancePercentage).truncate();
+    int overtimePay = (temp * overtimePayPercentage).truncate();
+    int bonus = (temp * bonusPercentage).truncate();
+    int providentFund = (temp * providentFundPercentage).truncate();
+    int healthInsurance = (temp * healthInsurancePercentage).truncate();
+    int tax = (temp * taxPercentage).truncate();
+    int attendanceDeduction = (temp * attendanceDeductionPercentage).truncate();
+
+    // Calculate totals
+    int totalDeductions = providentFund + healthInsurance + tax + attendanceDeduction;
+    int netPay = (temp - totalDeductions).truncate();
+
+    return {
+      'grossSalary': grossSalary.truncate(),
+      'basicPay': basicPay,
+      'houseRentalAllowance': hra,
+      'specialAllowance': specialAllowance,
+      'overtimePay': overtimePay,
+      'bonus': bonus,
+      'providentFund': providentFund,
+      'healthInsurance': healthInsurance,
+      'tax': tax,
+      'attendanceDeduction': attendanceDeduction,
+      'totalDeductions': totalDeductions,
+      'netPay': netPay,
+      'dateOfPayment': '23 Dec 2024', // Example date
+      'adminApproval': false, // Default value for admin approval
+    };
+  }
+
 
 
 
@@ -129,7 +178,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 const SizedBox(height: 15),
                 _buildTextField(
                   controller: _basicPayController,
-                  hintText: "Enter Basic Pay",
+                  hintText: "Enter Gross Pay",
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 30),
@@ -142,20 +191,16 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                       gradient: const LinearGradient(colors: [
                         Color.fromARGB(255, 23, 107, 204), // Dark blue
                         Color.fromARGB(255, 145, 193, 233),
-                      ] // Light blue],
-                      ),
+                      ]),
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        // Check if all required fields are filled
                         if (_nameController.text.isNotEmpty &&
                             _emailController.text.contains('@') &&
                             _mobileController.text.isNotEmpty &&
                             _basicPayController.text.isNotEmpty) {
-                          // Call the addEmployee function to add data to Firestore
                           addEmployee();
                         } else {
-                          // Show error message if fields are incomplete
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Please fill in all required fields."),
@@ -186,7 +231,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Method to build each input field
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -211,7 +255,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Age selector using stepper
   Widget _buildAgeSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -254,7 +297,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Gender selector using radio buttons
   Widget _buildGenderSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +341,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
-  // Dropdown widget
   Widget _buildDropdown({
     required String label,
     required List<String> items,
@@ -310,22 +351,14 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          "$label:",
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
         ),
-        const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
-          items: items
-              .map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(item, style: const TextStyle(fontSize: 14))))
-              .toList(),
-          onChanged: onChanged,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[300],
@@ -334,6 +367,14 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               borderSide: BorderSide.none,
             ),
           ),
+          value: value,
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(item, style: const TextStyle(fontSize: 14)),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
       ],
     );

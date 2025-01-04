@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:payroll_system/screens/employee/my_attendance.dart';
 import 'package:payroll_system/screens/employee/request_leave.dart';
 import 'package:payroll_system/screens/employee/view_payslip.dart';
-import 'package:payroll_system/screens/employee/profile.dart';
 import 'package:payroll_system/screens/employee/viewall.dart';
 import 'package:payroll_system/screens/welcome_screen.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
@@ -140,8 +139,9 @@ class EmployeeHome extends StatelessWidget {
                               onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                  const ViewPayslipPage(),
+                                  builder: (context) => ViewPayslipPage(
+                                    employeeId: docId,
+                                  ),
                                 ),
                               ),
                             ),

@@ -90,15 +90,16 @@ class AdminHome extends StatelessWidget {
                             ),
                           ),
                         ),
-                        _buildGradientButton(
-                          "Approve Payslip",
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ApprovePayslipPage(),
-                            ),
+                      _buildGradientButton(
+                        "Approve Payslip",
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>  ApprovePayslip(),  // Updated to use ApprovePayslip
                           ),
                         ),
+                      ),
+
                         _buildGradientButton(
                           "Manage Request",
                           onPressed: () => Navigator.push(
