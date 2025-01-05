@@ -22,7 +22,6 @@ class _EditEmployeePageState extends State<EditEmployee> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
-  final TextEditingController _basicPayController = TextEditingController();
 
   int _age = 30;
   String? _gender = "Male";
@@ -48,7 +47,6 @@ class _EditEmployeePageState extends State<EditEmployee> {
           _nameController.text = data['name'] ?? '';
           _emailController.text = data['email'] ?? '';
           _mobileController.text = data['mobile'] ?? '';
-          _basicPayController.text = data['basicPay']?.toString() ?? '';
           _age = data['age'] ?? 30;
           _gender = data['gender'] ?? "Male";
           _role = data['role'] ?? "Software Developer";
@@ -67,7 +65,6 @@ class _EditEmployeePageState extends State<EditEmployee> {
         'name': _nameController.text,
         'email': _emailController.text,
         'mobile': _mobileController.text,
-        'basicPay': double.tryParse(_basicPayController.text) ?? 0.0,
         'age': _age,
         'gender': _gender,
         'role': _role,
@@ -154,12 +151,6 @@ class _EditEmployeePageState extends State<EditEmployee> {
                   keyboardType: TextInputType.phone,
                   editable: false,
                 ),
-                const SizedBox(height: 15),
-                _buildTextField(
-                  controller: _basicPayController,
-                  hintText: "Basic Pay",
-                  keyboardType: TextInputType.number,
-                ),
                 const SizedBox(height: 30),
                 Center(
                   child: SizedBox(
@@ -168,8 +159,7 @@ class _EditEmployeePageState extends State<EditEmployee> {
                       onPressed: () {
                         if (_nameController.text.isNotEmpty &&
                             _emailController.text.contains('@') &&
-                            _mobileController.text.isNotEmpty &&
-                            _basicPayController.text.isNotEmpty) {
+                            _mobileController.text.isNotEmpty) {
                           _updateEmployeeData();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
