@@ -72,7 +72,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     double providentFundPercentage = 0.05; // Provident Fund = 5% of Gross Salary
     double healthInsurancePercentage = 0.02; // Health Insurance = 2% of Gross Salary
     double taxPercentage = 0.03; // Tax = 3% of Gross Salary
-    double attendanceDeductionPercentage = 0.01; // Attendance Deduction = 1% of Gross Salary
+    double attendanceDeductionPercentage = 0.0; // Attendance Deduction = 1% of Gross Salary
 
     // Calculate individual components
     int basicPay = (temp * basicPayPercentage).truncate();

@@ -186,8 +186,8 @@ class ApprovePayslip extends StatelessWidget {
         // Editable fields
         double bonus = double.tryParse(bonusController.text) ?? 0.0;
         double overtimePay = double.tryParse(overtimePayController.text) ?? 0.0;
-        double attendanceDeduction =
-            double.tryParse(attendanceDeductionController.text) ?? 0.0;
+        double attendanceDeduction =double.tryParse(overtimePayController.text) ??
+             0.0;
 
         // Calculations
         basicPayController.text = (temp * basicPayPercentage).truncate().toString();
@@ -393,7 +393,7 @@ class ApprovePayslip extends StatelessWidget {
           content: TextField(
             controller: dateController,
             decoration: const InputDecoration(
-              hintText: "e.g., 01 Jan 2025",
+              hintText: "december",
             ),
           ),
           actions: [
@@ -421,34 +421,88 @@ class ApprovePayslip extends StatelessWidget {
     );
   }
 
-  void _updateAllPaymentDates(BuildContext context, String newDate) async {
+  void _updateAllPaymentDates(BuildContext context, String month) async {
+    final firestore = FirebaseFirestore.instance;
+
     try {
-      final usersSnapshot = await _firestore.collection('users').get();
+      // Retrieve all users from the Firestore "users" collection
+      QuerySnapshot userSnapshots = await firestore.collection("users").get();
 
-      WriteBatch batch = _firestore.batch();
+      for (var userDoc in userSnapshots.docs) {
+        final userRef = userDoc.reference;
 
-      for (var userDoc in usersSnapshot.docs) {
-        final payslipsSnapshot =
-        await _firestore.collection('users/${userDoc.id}/payslips').get();
+        // Access the payslips collection and fetch the relevant document for the given month
+        QuerySnapshot payslipSnapshots = await userRef
+            .collection("payslips")
+            .where("dateOfPayment", isEqualTo: month.toLowerCase())
+            .get();
 
-        for (var payslipDoc in payslipsSnapshot.docs) {
-          batch.update(
-            _firestore
-                .collection('users/${userDoc.id}/payslips')
-                .doc(payslipDoc.id),
-            {'dateOfPayment': newDate},
-          );
+        if (payslipSnapshots.docs.isNotEmpty) {
+          // Get the first payslip document (assuming one document per month)
+          final payslipData = payslipSnapshots.docs.first.data() as Map<String, dynamic>;
+
+          // Extract grossSalary and other payslip components
+          double grossSalary = payslipData["grossSalary"] ?? 0.0;
+          double bonus = payslipData["bonus"] ?? 0.0;
+          double overtimePay = payslipData["overtimePay"] ?? 0.0;
+
+          // Percentages for deductions and calculations
+          const double basicPayPercentage = 0.5;
+          const double hraPercentage = 0.2;
+          const double specialAllowancePercentage = 0.1;
+          const double providentFundPercentage = 0.05;
+          const double healthInsurancePercentage = 0.02;
+          const double taxPercentage = 0.03;
+
+          // Base salary calculation (grossSalary / 12)
+          double baseSalary = grossSalary / 12;
+
+          // Calculated fields
+          double basicPay = baseSalary * basicPayPercentage;
+          double hra = baseSalary * hraPercentage;
+          double specialAllowance = baseSalary * specialAllowancePercentage;
+          double providentFund = baseSalary * providentFundPercentage;
+          double healthInsurance = baseSalary * healthInsurancePercentage;
+          double tax = baseSalary * taxPercentage;
+
+          // Access the attendance document for the given month
+          DocumentReference attendanceRef = userRef.collection("attendance").doc(month.toLowerCase());
+          DocumentSnapshot attendanceSnapshot = await attendanceRef.get();
+
+          double attendanceDeduction = 0.0;
+          if (attendanceSnapshot.exists) {
+            final attendanceData = attendanceSnapshot.data() as Map<String, dynamic>;
+            int absentDays = attendanceData["AbsentDays"] ?? 0;
+
+            // Calculate attendance deduction
+            if (absentDays > 8) {
+              attendanceDeduction = 0.01 * grossSalary;
+            }
+          }
+
+          // Total deductions
+          double totalDeductions = providentFund + healthInsurance + tax + attendanceDeduction;
+
+          // Net Pay calculation
+          double netPay = baseSalary + bonus + overtimePay - totalDeductions;
+
+          // Update the payslips collection with the calculated values
+          await payslipSnapshots.docs.first.reference.update({
+            "basicPay": basicPay.round(),
+            "hra": hra.round(),
+            "specialAllowance": specialAllowance.round(),
+            "providentFund": providentFund.round(),
+            "healthInsurance": healthInsurance.round(),
+            "tax": tax.round(),
+            "attendanceDeduction": attendanceDeduction.round(),
+            "totalDeductions": totalDeductions.round(),
+            "netPay": netPay.round(),
+          });
         }
       }
-
-      await batch.commit();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All payment dates updated successfully!')),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating payment dates: $e')),
+        SnackBar(content: Text("Error updating attendance: $e")),
       );
     }
   }
