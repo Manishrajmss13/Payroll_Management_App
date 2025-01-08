@@ -1,32 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:payroll_system/widgets/custom_scaffold.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore import
 
 class EmployeeAttendancePage extends StatefulWidget {
-  const EmployeeAttendancePage({super.key});
+  final String userId;
+  final String month;
+  const EmployeeAttendancePage({super.key, required this.userId, required this.month});
 
   @override
   State<EmployeeAttendancePage> createState() => _EmployeeAttendancePageState();
 }
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
-  // Sample data for attendance
-  final int totalDaysInYear = 365;
-  final int daysWorked = 320;
-  final int daysLeaveTaken = 45;
-  final int yearlyLeaveAllowance = 50;
-
-  // Mock data for absent log
-  final List<String> absentLog = [
-    "Jan 5, 2024",
-    "Feb 10, 2024",
-    "Mar 15, 2024",
-    "Apr 25, 2024",
-    "May 30, 2024",
-  ];
-
-  // Store selected chart section
+  int totalWorkingDays = 22;
+  int presentDays = 0;
+  int absentDays = 0;
+  List<String> absentLog = [];
   int? _touchedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load attendance data from Firestore
+    _loadAttendanceData();
+  }
+
+  // Fetch attendance data from Firestore
+  Future<void> _loadAttendanceData() async {
+    // Access the user's attendance document for the specified month
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('attendance')
+        .doc(widget.month)
+        .get();
+
+    if (snapshot.exists) {
+      var data = snapshot.data() as Map<String, dynamic>;
+
+      setState(() {
+        // Parse the data and update the state
+        presentDays = data['PresentDays'] ?? 0;
+        absentDays = data['AbsentDays'] ?? 0;
+        absentLog = List<String>.from(data['AbsentsLog'] ?? []);
+      });
+    } else {
+      print("No attendance data found for this user in the specified month.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +67,10 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               margin: const EdgeInsets.only(bottom: 5),
-              child: const Text(
-                "December 2024",
+              child: Text(
+                widget.month, // Use the month passed in the constructor
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -122,12 +144,11 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSummaryRow(Icons.calendar_today, "Total Days in Year", totalDaysInYear.toString()),
-                        _buildSummaryRow(Icons.beach_access, "Leave Taken in Year", daysLeaveTaken.toString()),
-                        _buildSummaryRow(Icons.check_circle, "Remaining Leave",
-                            (yearlyLeaveAllowance - daysLeaveTaken).toString()),
+                        _buildSummaryRow(Icons.calendar_today, "Total Working Days", totalWorkingDays.toString()),
+                        _buildSummaryRow(Icons.beach_access, "No of days present", presentDays.toString()),
+                        _buildSummaryRow(Icons.check_circle, "No of days Absent", absentDays.toString()),
                         _buildSummaryRow(Icons.work, "Remaining Working Days",
-                            (totalDaysInYear - (daysWorked + daysLeaveTaken)).toString()),
+                            (totalWorkingDays - presentDays).toString()),
                       ],
                     ),
                   ),
@@ -185,15 +206,14 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
     );
   }
 
-  // Helper function to create Pie Chart sections
   List<PieChartSectionData> _buildChartSections() {
     return [
       PieChartSectionData(
         color: Colors.green,
-        value: daysWorked.toDouble(),
+        value: presentDays.toDouble(),
         title: _touchedIndex == 0
-            ? "$daysWorked Days"
-            : "${((daysWorked / totalDaysInYear) * 100).toStringAsFixed(1)}%",
+            ? "$presentDays Days"
+            : "${((presentDays / totalWorkingDays) * 100).toStringAsFixed(1)}%",
         radius: _touchedIndex == 0 ? 70 : 60,
         titleStyle: const TextStyle(
           fontSize: 14,
@@ -203,10 +223,10 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
       ),
       PieChartSectionData(
         color: Colors.redAccent,
-        value: daysLeaveTaken.toDouble(),
+        value: absentDays.toDouble(),
         title: _touchedIndex == 1
-            ? "$daysLeaveTaken Days"
-            : "${((daysLeaveTaken / totalDaysInYear) * 100).toStringAsFixed(1)}%",
+            ? "$absentDays Days"
+            : "${((absentDays / totalWorkingDays) * 100).toStringAsFixed(1)}%",
         radius: _touchedIndex == 1 ? 70 : 60,
         titleStyle: const TextStyle(
           fontSize: 14,
