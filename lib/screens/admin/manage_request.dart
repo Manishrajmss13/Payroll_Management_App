@@ -1,45 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:payroll_system/widgets/custom_scaffold.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:payroll_system/screens/admin/request_approve.dart';
 
-class ManageRequestPage extends StatefulWidget {
+class ManageRequestPage extends StatelessWidget {
   const ManageRequestPage({super.key});
 
   @override
-  State<ManageRequestPage> createState() => _ManageRequestPageState();
-}
-
-class _ManageRequestPageState extends State<ManageRequestPage> {
-  @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      apptitle: const Text("Manage Requests",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          )),
-      child: Column(
-        children: [
-          const Expanded(
-            flex: 1,
-            child: SizedBox(
-              height: 10,
-            ),
-          ),
-          Expanded(
-            flex: 7,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 20.0),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40.0),
-                  topRight: Radius.circular(40.0),
-                ),
-              ),
-            ),
-          ),
-        ],
+    final _firestore = FirebaseFirestore.instance;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Manage Leave Requests')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('LeaveRequest').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final requests = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: requests.length,
+            itemBuilder: (context, index) {
+              final request = requests[index];
+              return ListTile(
+                title: Text(request['name']),
+                subtitle: Text('Dates: ${request['dates']}\nReason: ${request['reason']}'),
+                trailing: Text(request['status']),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RequestApprovePage(requestId: request.id),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
+
